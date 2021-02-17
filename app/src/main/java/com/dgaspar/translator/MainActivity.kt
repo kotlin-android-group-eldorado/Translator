@@ -6,7 +6,6 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.widget.ArrayAdapter
@@ -14,11 +13,13 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.apertium.utils.IOUtils
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileOutputStream
-import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLConnection
 import javax.net.ssl.HttpsURLConnection
@@ -67,40 +68,25 @@ class MainActivity : AppCompatActivity() {
         var columns = line.split("\t")
         println("CHECK IF THERE ARE AT LEAST 2 COLUMNS")
 
-        // get package that will be installed
-        var pkg : String = columns[0]
-
         // download package
-        println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+        /*println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
         //val connection = URL("https://svn.code.sf.net/p/apertium/svn/builds/apertium-es-pt/apertium-es-pt.jar").openConnection() as HttpsURLConnection
         var connection = URL("http://www.android.com/").openConnection() as HttpURLConnection
         println("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB : " + isOnline(this).toString())
         //val data = connection.inputStream.bufferedReader().readText()
 
-        //sendGet()
-
-        //URL("https://google.com").readText()
-
-        //var url : URL = URL(columns[1])
-        //var https = HttpsURLConnection(url)
-        //val uc : URLConnection = url.openConnection()
-//        var lastModified = uc.lastModified // NOT WORKING
-//        var contentLength = uc.contentLength // NOT WORKING
-        //var tmpjarfile : File = File(cacheDir, pkg + "jar")
-        //var aaa = uc.getInputStream()
-        //var inStream = BufferedInputStream(uc.getInputStream())
-        /*var fos : FileOutputStream = FileOutputStream(tmpjarfile)
-        var data = ByteArray(8192)
-        var count: Int
-        var total : Int = 0
-        fos.close()*/
-        //inStream.close()
+        */
 
         // install jar
-        //ai.installJar(tmpjarfile, pkg)
-
-        // delete temp file
-        //tmpjarfile.delete()
+        //var url : URL = URL("http://www.android.com/")
+        var url : URL = URL("https://svn.code.sf.net/p/apertium/svn/builds/apertium-es-pt/apertium-es-pt.jar")
+        var pkg : String = "apertium-es-pt"
+        //var pkg : String = columns[0]
+        //var url : URL = URL(columns[1])
+        CoroutineScope(Dispatchers.IO).launch {
+            installPackage(ai, pkg, url)
+            println("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ")
+        }
 
         /////////////////////////////////////////////////////////////////////////////////////
 
@@ -142,6 +128,49 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+    /////////////////////////////////////////////////////////////////////////////////////////
+
+    suspend fun installPackage(ai : ApertiumInstallation, pkg : String, url : URL){
+        //var connection = url.openConnection() as HttpURLConnection
+        var connection : URLConnection = url.openConnection() as HttpsURLConnection
+
+        var lastModified = connection.lastModified
+        var contentLength = connection.contentLength
+
+        var tmpjarfile : File = File(cacheDir, pkg + "jar")
+
+        println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+
+        // create input and output stream
+        var inStream = BufferedInputStream(connection.getInputStream())
+        var fos : FileOutputStream = FileOutputStream(tmpjarfile)
+
+        // download data
+        var data = ByteArray(8192)
+        var count: Int = 0
+        var total : Int = 0
+        while (inStream.read(data, 0, 1024).also({ count = it }) != -1){
+            fos.write(data, 0, count)
+            total += count
+        }
+
+        // close files
+        fos.close()
+        inStream.close()
+
+        println("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB")
+
+        // install jar
+        ai.installJar(tmpjarfile, pkg)
+
+        // delete temp file
+        tmpjarfile.delete()
+
+        println("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////
+
     fun setContentOnDropDownView(
         viewId : Int,
         items : Array<String>
@@ -175,22 +204,6 @@ class MainActivity : AppCompatActivity() {
         } else {
             val netInfo = cm.activeNetworkInfo
             return netInfo != null && netInfo.isConnectedOrConnecting
-        }
-    }
-
-    fun sendGet() {
-        val url = URL("http://www.google.com/")
-
-        with(url.openConnection() as HttpURLConnection) {
-            requestMethod = "GET"  // optional default is GET
-
-            println("\nSent 'GET' request to URL : $url; Response Code : $responseCode")
-
-            inputStream.bufferedReader().use {
-                it.lines().forEach { line ->
-                    println(line)
-                }
-            }
         }
     }
 }
