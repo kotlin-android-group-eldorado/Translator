@@ -6,8 +6,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.apertium.Translator
+import org.apertium.utils.IOUtils.cacheDir
+import java.io.BufferedInputStream
 import java.io.File
+import java.io.FileOutputStream
+import java.net.URL
+import java.net.URLConnection
 import java.util.*
+import javax.net.ssl.HttpsURLConnection
 import kotlin.collections.ArrayList
 
 /**
@@ -25,7 +31,10 @@ class Apertium (packagesDir : File, bytecodeDir : File, bytecodeCacheDir : File)
     private var bytecodeCacheDir : File = bytecodeCacheDir
 
     /** <key, value> = <"Spanish → Portuguese (BR)", "es-pt_BR"> */
-    var titleToMode = HashMap<String, String>()
+    public var titleToMode = HashMap<String, String>()
+
+    /** REMOVE LATER*/
+    private var ai : ApertiumInstallation = ApertiumInstallation(packagesDir, bytecodeDir, bytecodeCacheDir)
 
     init {
         packagesDir.mkdirs()
@@ -35,7 +44,7 @@ class Apertium (packagesDir : File, bytecodeDir : File, bytecodeCacheDir : File)
 
     /*******************************************************************************************/
 
-    fun rescanForPackages(){
+    public fun rescanForPackages(){
         titleToMode.clear()
 
         /** list packages */
@@ -66,22 +75,54 @@ class Apertium (packagesDir : File, bytecodeDir : File, bytecodeCacheDir : File)
 
     /*******************************************************************************************/
 
-    fun installJar(){
+    public fun installPackage(pkg : String, url : URL){
         CoroutineScope(Dispatchers.IO).launch {
-            installJarAsync()
-            println("PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP2")
+            installPackageAsync(pkg, url)
+            println("PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP3")
         }
     }
 
-    suspend fun installJarAsync(){
+    private suspend fun installPackageAsync(pkg : String, url : URL){
         println("PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP1")
+
+        var connection : URLConnection = url.openConnection() as HttpsURLConnection
+
+        //var lastModified = connection.lastModified
+        //var contentLength = connection.contentLength
+
+        var tmpjarfile : File = File(cacheDir, "$pkg.jar")
+
+        // create input and output stream
+        var inStream = BufferedInputStream(connection.getInputStream())
+        var fos : FileOutputStream = FileOutputStream(tmpjarfile)
+
+        // download data
+        var data = ByteArray(8192)
+        var count: Int = 0
+        var total : Int = 0
+        while (inStream.read(data, 0, 1024).also({ count = it }) != -1){
+            fos.write(data, 0, count)
+            total += count
+        }
+
+        // close files
+        fos.close()
+        inStream.close()
+
+        // install jar
+        ai.installJar(tmpjarfile, pkg)
+
+        // delete temp file
+        tmpjarfile.delete()
+
+        println("PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP2")
     }
 
     /*******************************************************************************************/
 
     /** auxiliar functions */
 
-    open fun getClassLoaderForPackage(pkg: String): DexClassLoader? {
+    public fun getClassLoaderForPackage(pkg: String): DexClassLoader? {
         if (!bytecodeCacheDir.exists()) {
             bytecodeCacheDir.mkdirs()
         }
@@ -91,4 +132,7 @@ class Apertium (packagesDir : File, bytecodeDir : File, bytecodeCacheDir : File)
                 null, this.javaClass.classLoader)
     }
 
+    public fun getBasedirForPackage(pkg: String): String? {
+        return "$packagesDir/$pkg"
+    }
 }

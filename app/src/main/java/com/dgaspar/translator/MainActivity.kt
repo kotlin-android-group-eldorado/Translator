@@ -26,16 +26,6 @@ import java.net.URLConnection
 import javax.net.ssl.HttpsURLConnection
 
 class MainActivity : AppCompatActivity() {
-    /*var instance: com.dgaspar.translator.MainActivity? = null
-
-    fun reportError(ex: Exception) {
-        ex.printStackTrace()
-        //com.dgaspar.translator.MainActivity.longToast("Error: $ex")
-        //org.apertium.android.App.longToast("The error will be reported to the developers. sorry for the inconvenience.")
-        //BugSenseHandler.sendException(ex);
-    }*/
-    var apertiumInstallation: ApertiumInstallation? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -48,35 +38,87 @@ class MainActivity : AppCompatActivity() {
         var inputEditText : EditText = findViewById(R.id.inputText)
         var outputEditText : EditText = findViewById(R.id.outputText)
 
+        // disable inputEditText
+        inputEditText.isEnabled = false
+        inputEditText.isFocusable = false
+        inputEditText.isFocusableInTouchMode = false
+
         /////////////////////////////////////////////////////////////////////////////////////
 
-        /** APERTIUM TRANSLATOR - KOTLIN */
+        /**
+         * APERTIUM TRANSLATOR - KOTLIN
+         * https://wiki.apertium.org/wiki/Apertium_Android
+        */
 
-        // generate temp dirs
+        /** generate temp dirs */
         var packagesDir : File = File(filesDir, "packages") // where packages data are installed
-        var bytecodeDir : File = File(filesDir, "bytecode") // where packages bytecode are installed. Must be private
-        var bytecodeCacheDir : File = File(filesDir, "bytecodecache") // where bytecode cache is kept. Must be private
-
-        // initialize apertium
-        var apertium : Apertium = Apertium(packagesDir, bytecodeDir, bytecodeCacheDir)
-        apertium.rescanForPackages()
-        println("0000000000000000000000: " + apertium.titleToMode.keys + "  " + apertium.titleToMode.values)
-
-        /////////////////////////////////////////////////////////////////////////////////////
-/*
-        // configure translator
-        // https://wiki.apertium.org/wiki/Apertium_Android
-
-        // generate temp dirs
-//        var packagesDir : File = File(filesDir, "packages") // where packages data are installed
         var bytecodeDir : File = File(filesDir, "bytecode") // where packages bytecode are installed. Must be private
         var bytecodeCacheDir : File = File(filesDir, "bytecodecache") // where bytecode cache is kept. Must be private
         IOUtils.cacheDir = File(cacheDir, "apertium-index-cache") // where cached transducer indexes are kept
 
-        // check installed packages
-        var ai = ApertiumInstallation(packagesDir, bytecodeDir, bytecodeCacheDir)
-        ai.rescanForPackages()
+        /** initialize apertium */
+        var apertium : Apertium = Apertium(packagesDir, bytecodeDir, bytecodeCacheDir)
+        apertium.rescanForPackages()
+        println(".\nINSTALLED PACKAGES:\n" + apertium.titleToMode.keys + "\n" + apertium.titleToMode.values)
 
+        /** INSTALL es-pt PACKAGE (TEST) */
+        /** COMMENT ON FINAL VERSION */
+        var url : URL = URL("https://svn.code.sf.net/p/apertium/svn/builds/apertium-es-pt/apertium-es-pt.jar")
+        var pkg : String = "apertium-es-pt"
+        apertium.installPackage(pkg, url)
+
+        /** add installed package titles to dropDown menu */
+        setContentOnDropDownView(
+                R.id.dropdown_menu,
+                apertium.titleToMode.keys.toTypedArray()
+        )
+
+        /** active editText if there is any package installed (dropdown_menu != null) */
+        var dropdown_menu : Spinner = findViewById(R.id.dropdown_menu)
+        if (dropdown_menu != null){ // not empty
+            //println("11111111111111111111111: " + dropdown_menu.adapter)
+
+            // enable inputEditText
+            inputEditText.isEnabled = true
+            inputEditText.isFocusable = true
+            inputEditText.isFocusableInTouchMode = true
+
+            // input and output text
+            var inputText : String = ""
+            var outputText : String = ""
+
+            // get package from title
+            //var pkg : String = "apertium-es-pt" // TEST - GET DYNAMICALLY
+
+            inputEditText.setOnKeyListener(View.OnKeyListener{ v, keyCode, event ->
+                if(event.action == KeyEvent.ACTION_UP){
+
+                    /** get input text */
+                    inputText = inputEditText.text.toString()
+
+                    /** translate */
+                    if (inputText.isNotEmpty()){
+                        var title : String = apertium.titleToMode.keys.toTypedArray()[0] // get first element
+                        var mode : String = apertium.titleToMode[title].toString()
+
+                        Translator.setBase(apertium.getBasedirForPackage(pkg), apertium.getClassLoaderForPackage(pkg))
+                        Translator.setMode(mode)
+                        outputText = Translator.translate(inputText)
+                    } else {
+                        outputText = ""
+                    }
+
+                    /** set outputText */
+                    println(inputEditText.text)
+                    outputEditText.setText(outputText)
+
+                    true
+                }
+                false
+            })
+        }
+/*
+        // PUT BELLOW CODE ON "PackageManagerActivity.kt"
         // read available packages to install
         // on original => language_pairs.txt and InstallActivity.java
         var line : String = "apertium-es-pt\thttps://svn.code.sf.net/p/apertium/svn/builds/apertium-es-pt/apertium-es-pt.jar"
@@ -89,115 +131,7 @@ class MainActivity : AppCompatActivity() {
         var pkg : String = "apertium-es-pt"
         //var pkg : String = columns[0]
         //var url : URL = URL(columns[1])
-        CoroutineScope(Dispatchers.IO).launch {
-            installPackage(ai, pkg, url)
-            println("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ")
-        }
-
-        /////////////////////////////////////////////////////////////////////////////////////
-
-        // input language
-        setContentOnDropDownView(
-            R.id.inputLanguage,
-            arrayOf("Inglês", "Português")
-        )
-        //inputLanguage.onItemSelectedListener(this)
-
-        // input language
-        setContentOnDropDownView(
-            R.id.outputLanguage,
-            arrayOf("Português", "Inglês")
-        )
-
-        /////////////////////////////////////////////////////////////////////////////////////
-
-        // watch editText
-        var outputText : String = ""
-
-        inputEditText.setOnKeyListener(View.OnKeyListener{ v, keyCode, event ->
-            // if(event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER){
-            if(event.action == KeyEvent.ACTION_UP){
-
-                // get input text
-                outputText = inputEditText.text.toString()
-
-                // translate
-
-
-                // set outputText
-                println(inputEditText.text)
-                outputEditText.setText(outputText)
-
-                true
-            }
-            false
-        })*/
-    }
-
-    /////////////////////////////////////////////////////////////////////////////////////////
-
-    suspend fun installPackage(ai : ApertiumInstallation, pkg : String, url : URL){
-        //var connection = url.openConnection() as HttpURLConnection
-        var connection : URLConnection = url.openConnection() as HttpsURLConnection
-
-        var lastModified = connection.lastModified
-        var contentLength = connection.contentLength
-
-        var tmpjarfile : File = File(cacheDir, pkg + ".jar")
-
-        println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-
-        // create input and output stream
-        var inStream = BufferedInputStream(connection.getInputStream())
-        var fos : FileOutputStream = FileOutputStream(tmpjarfile)
-
-        // download data
-        var data = ByteArray(8192)
-        var count: Int = 0
-        var total : Int = 0
-        while (inStream.read(data, 0, 1024).also({ count = it }) != -1){
-            fos.write(data, 0, count)
-            total += count
-        }
-
-        // close files
-        fos.close()
-        inStream.close()
-
-        println("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB")
-
-        var files = cacheDir.listFiles()
-        for (i in files){
-            println("HHHH: " + i.toString())
-        }
-
-        var installedPackages = ai.modeToPackage.values
-        for (i in installedPackages){
-            println("IIIIIIIIIIIII: " + i.toString())
-        }
-
-        // install jar
-        ai.installJar(tmpjarfile, pkg)
-
-        // delete temp file
-        tmpjarfile.delete()
-
-        println("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC: " + ai.titleToMode.keys + "  " + ai.titleToMode.values)
-
-        // translate test
-
-        var key : String = ai.titleToMode.keys.toTypedArray()[0] // get first element
-        var mode : String = ai.titleToMode.get(key).toString()
-
-        Translator.setBase(ai.getBasedirForPackage(pkg), ai.getClassLoaderForPackage(pkg))
-        println("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD1: " + mode)
-        Translator.setMode(mode)
-        println("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD2")
-        var output : String = Translator.translate("Hola")
-        println("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD3")
-        println("RRRRRRRRRRRRRRRRRR: " + output)
-
-        println("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD4")
+*/
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////
@@ -216,7 +150,6 @@ class MainActivity : AppCompatActivity() {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
         spinner.adapter = adapter
-
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////
