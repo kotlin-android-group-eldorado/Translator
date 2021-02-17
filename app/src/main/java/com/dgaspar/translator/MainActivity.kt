@@ -8,10 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
-import android.widget.ArrayAdapter
-import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.Spinner
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -63,20 +60,38 @@ class MainActivity : AppCompatActivity() {
 
         /** INSTALL es-pt PACKAGE (TEST) */
         /** COMMENT ON FINAL VERSION */
-        var url : URL = URL("https://svn.code.sf.net/p/apertium/svn/builds/apertium-es-pt/apertium-es-pt.jar")
-        var pkg : String = "apertium-es-pt"
-        apertium.installPackage(pkg, url)
+        //var url : URL = URL("https://svn.code.sf.net/p/apertium/svn/builds/apertium-es-pt/apertium-es-pt.jar")
+        //var pkgAux : String = "apertium-es-pt"
+        //apertium.installPackage(pkgAux, url)
 
         /** add installed package titles to dropDown menu */
+        var dropdownMenu : Spinner = findViewById(R.id.dropdown_menu)
         setContentOnDropDownView(
-                R.id.dropdown_menu,
+                dropdownMenu,
                 apertium.titleToMode.keys.toTypedArray()
         )
 
         /** active editText if there is any package installed (dropdown_menu != null) */
-        var dropdown_menu : Spinner = findViewById(R.id.dropdown_menu)
-        if (dropdown_menu != null){ // not empty
-            //println("11111111111111111111111: " + dropdown_menu.adapter)
+        if (dropdownMenu != null){ // not empty
+
+            // dropDown selected variables
+            var title : String = dropdownMenu.selectedItem.toString()
+            var mode = apertium.titleToMode[title].toString()
+            var pkg = apertium.modeToPackage[mode].toString()
+
+            // dropDown menu
+            dropdownMenu.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+
+                }
+
+                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                    title = dropdownMenu.selectedItem.toString()
+                    mode = apertium.titleToMode[title].toString()
+                    pkg = apertium.modeToPackage[mode].toString()
+                    println("dropdownMenu: $title $mode $pkg")
+                }
+            }
 
             // enable inputEditText
             inputEditText.isEnabled = true
@@ -87,9 +102,6 @@ class MainActivity : AppCompatActivity() {
             var inputText : String = ""
             var outputText : String = ""
 
-            // get package from title
-            //var pkg : String = "apertium-es-pt" // TEST - GET DYNAMICALLY
-
             inputEditText.setOnKeyListener(View.OnKeyListener{ v, keyCode, event ->
                 if(event.action == KeyEvent.ACTION_UP){
 
@@ -98,9 +110,6 @@ class MainActivity : AppCompatActivity() {
 
                     /** translate */
                     if (inputText.isNotEmpty()){
-                        var title : String = apertium.titleToMode.keys.toTypedArray()[0] // get first element
-                        var mode : String = apertium.titleToMode[title].toString()
-
                         Translator.setBase(apertium.getBasedirForPackage(pkg), apertium.getClassLoaderForPackage(pkg))
                         Translator.setMode(mode)
                         outputText = Translator.translate(inputText)
@@ -137,11 +146,9 @@ class MainActivity : AppCompatActivity() {
     /////////////////////////////////////////////////////////////////////////////////////////
 
     fun setContentOnDropDownView(
-        viewId : Int,
+        spinner : Spinner,
         items : Array<String>
     ){
-        var spinner : Spinner = findViewById(viewId)
-
         var adapter = ArrayAdapter(
             this,
             android.R.layout.simple_spinner_dropdown_item,

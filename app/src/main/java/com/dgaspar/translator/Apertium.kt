@@ -33,6 +33,9 @@ class Apertium (packagesDir : File, bytecodeDir : File, bytecodeCacheDir : File)
     /** <key, value> = <"Spanish → Portuguese (BR)", "es-pt_BR"> */
     public var titleToMode = HashMap<String, String>()
 
+    /** <key, value> = <"es-pt_BR", "apertium-es-pt_BR"> */
+    public var modeToPackage = HashMap<String, String>()
+
     /** REMOVE LATER*/
     private var ai : ApertiumInstallation = ApertiumInstallation(packagesDir, bytecodeDir, bytecodeCacheDir)
 
@@ -46,6 +49,7 @@ class Apertium (packagesDir : File, bytecodeDir : File, bytecodeCacheDir : File)
 
     public fun rescanForPackages(){
         titleToMode.clear()
+        modeToPackage.clear()
 
         /** list packages */
         var installedPackages : ArrayList<String> = packagesDir.list().toCollection(ArrayList())
@@ -64,6 +68,7 @@ class Apertium (packagesDir : File, bytecodeDir : File, bytecodeCacheDir : File)
                     for (mode in Translator.getAvailableModes()){
                         var title : String = LanguageTitles.getTitle(mode)
                         titleToMode[title] = mode
+                        modeToPackage[mode] = pkg
                     }
                 } catch (e : Throwable){
                     e.printStackTrace()
