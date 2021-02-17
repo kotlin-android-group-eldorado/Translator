@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.apertium.Translator
 import org.apertium.utils.IOUtils
 import java.io.BufferedInputStream
 import java.io.File
@@ -49,11 +50,25 @@ class MainActivity : AppCompatActivity() {
 
         /////////////////////////////////////////////////////////////////////////////////////
 
+        /** APERTIUM TRANSLATOR - KOTLIN */
+
+        // generate temp dirs
+        var packagesDir : File = File(filesDir, "packages") // where packages data are installed
+        var bytecodeDir : File = File(filesDir, "bytecode") // where packages bytecode are installed. Must be private
+        var bytecodeCacheDir : File = File(filesDir, "bytecodecache") // where bytecode cache is kept. Must be private
+
+        // initialize apertium
+        var apertium : Apertium = Apertium(packagesDir, bytecodeDir, bytecodeCacheDir)
+        apertium.rescanForPackages()
+        println("0000000000000000000000: " + apertium.titleToMode.keys + "  " + apertium.titleToMode.values)
+
+        /////////////////////////////////////////////////////////////////////////////////////
+/*
         // configure translator
         // https://wiki.apertium.org/wiki/Apertium_Android
 
         // generate temp dirs
-        var packagesDir : File = File(filesDir, "packages") // where packages data are installed
+//        var packagesDir : File = File(filesDir, "packages") // where packages data are installed
         var bytecodeDir : File = File(filesDir, "bytecode") // where packages bytecode are installed. Must be private
         var bytecodeCacheDir : File = File(filesDir, "bytecodecache") // where bytecode cache is kept. Must be private
         IOUtils.cacheDir = File(cacheDir, "apertium-index-cache") // where cached transducer indexes are kept
@@ -66,16 +81,7 @@ class MainActivity : AppCompatActivity() {
         // on original => language_pairs.txt and InstallActivity.java
         var line : String = "apertium-es-pt\thttps://svn.code.sf.net/p/apertium/svn/builds/apertium-es-pt/apertium-es-pt.jar"
         var columns = line.split("\t")
-        println("CHECK IF THERE ARE AT LEAST 2 COLUMNS")
-
-        // download package
-        /*println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-        //val connection = URL("https://svn.code.sf.net/p/apertium/svn/builds/apertium-es-pt/apertium-es-pt.jar").openConnection() as HttpsURLConnection
-        var connection = URL("http://www.android.com/").openConnection() as HttpURLConnection
-        println("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB : " + isOnline(this).toString())
-        //val data = connection.inputStream.bufferedReader().readText()
-
-        */
+        println("NEED TO CHECK IF THERE ARE AT LEAST 2 COLUMNS")
 
         // install jar
         //var url : URL = URL("http://www.android.com/")
@@ -125,7 +131,7 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             false
-        })
+        })*/
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////
@@ -137,7 +143,7 @@ class MainActivity : AppCompatActivity() {
         var lastModified = connection.lastModified
         var contentLength = connection.contentLength
 
-        var tmpjarfile : File = File(cacheDir, pkg + "jar")
+        var tmpjarfile : File = File(cacheDir, pkg + ".jar")
 
         println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 
@@ -160,13 +166,38 @@ class MainActivity : AppCompatActivity() {
 
         println("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB")
 
+        var files = cacheDir.listFiles()
+        for (i in files){
+            println("HHHH: " + i.toString())
+        }
+
+        var installedPackages = ai.modeToPackage.values
+        for (i in installedPackages){
+            println("IIIIIIIIIIIII: " + i.toString())
+        }
+
         // install jar
         ai.installJar(tmpjarfile, pkg)
 
         // delete temp file
         tmpjarfile.delete()
 
-        println("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")
+        println("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC: " + ai.titleToMode.keys + "  " + ai.titleToMode.values)
+
+        // translate test
+
+        var key : String = ai.titleToMode.keys.toTypedArray()[0] // get first element
+        var mode : String = ai.titleToMode.get(key).toString()
+
+        Translator.setBase(ai.getBasedirForPackage(pkg), ai.getClassLoaderForPackage(pkg))
+        println("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD1: " + mode)
+        Translator.setMode(mode)
+        println("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD2")
+        var output : String = Translator.translate("Hola")
+        println("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD3")
+        println("RRRRRRRRRRRRRRRRRR: " + output)
+
+        println("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD4")
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////
