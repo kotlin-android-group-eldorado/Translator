@@ -52,7 +52,8 @@ class Apertium (packagesDir : File, bytecodeDir : File, bytecodeCacheDir : File)
         modeToPackage.clear()
 
         /** list packages */
-        var installedPackages : ArrayList<String> = packagesDir.list().toCollection(ArrayList())
+        var installedPackages : ArrayList<String> = getInstalledPackages()
+        //var installedPackages : ArrayList<String> = packagesDir.list().toCollection(ArrayList())
 
         /** cycle through installed packages list */
         for (pkg in installedPackages){
@@ -76,6 +77,12 @@ class Apertium (packagesDir : File, bytecodeDir : File, bytecodeCacheDir : File)
                 }
             }
         }
+    }
+
+    /*******************************************************************************************/
+
+    public fun getInstalledPackages() : ArrayList<String>{
+        return packagesDir.list().toCollection(ArrayList())
     }
 
     /*******************************************************************************************/
@@ -166,7 +173,7 @@ class Apertium (packagesDir : File, bytecodeDir : File, bytecodeCacheDir : File)
         }
         return DexClassLoader(
                 "$bytecodeDir/$pkg.jar",
-                bytecodeCacheDir.getAbsolutePath(),
+                bytecodeCacheDir.absolutePath, //bytecodeCacheDir.getAbsolutePath(),
                 null, this.javaClass.classLoader)
     }
 
