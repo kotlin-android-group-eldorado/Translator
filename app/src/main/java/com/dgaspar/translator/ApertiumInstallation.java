@@ -173,7 +173,6 @@ public class ApertiumInstallation {
         FileUtils.remove(new File(bytecodeCacheDir, pkg + ".dex"));
     }
 
-
     public DexClassLoader getClassLoaderForPackage(String pkg) {
 //        Log.d(TAG, "new DexClassLoader(" + basedir + ".jar");
         //return new DexClassLoader(getBasedirForPackage(pkg)+ ".jar", bytecodeCacheDir.getAbsolutePath(), null, this.getClass().getClassLoader());

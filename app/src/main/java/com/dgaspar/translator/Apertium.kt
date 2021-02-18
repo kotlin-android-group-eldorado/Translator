@@ -7,12 +7,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.apertium.Translator
 import org.apertium.utils.IOUtils.cacheDir
-import java.io.BufferedInputStream
-import java.io.File
-import java.io.FileOutputStream
+import java.io.*
 import java.net.URL
 import java.net.URLConnection
 import java.util.*
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 import javax.net.ssl.HttpsURLConnection
 import kotlin.collections.ArrayList
 
@@ -37,7 +37,7 @@ class Apertium (packagesDir : File, bytecodeDir : File, bytecodeCacheDir : File)
     public var modeToPackage = HashMap<String, String>()
 
     /** REMOVE LATER*/
-    private var ai : ApertiumInstallation = ApertiumInstallation(packagesDir, bytecodeDir, bytecodeCacheDir)
+    //private var ai : ApertiumInstallation = ApertiumInstallation(packagesDir, bytecodeDir, bytecodeCacheDir)
 
     init {
         packagesDir.mkdirs()
@@ -83,13 +83,10 @@ class Apertium (packagesDir : File, bytecodeDir : File, bytecodeCacheDir : File)
     public fun installPackage(pkg : String, url : URL){
         CoroutineScope(Dispatchers.IO).launch {
             installPackageAsync(pkg, url)
-            println("PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP3")
         }
     }
 
     private suspend fun installPackageAsync(pkg : String, url : URL){
-        println("PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP1")
-
         var connection : URLConnection = url.openConnection() as HttpsURLConnection
 
         //var lastModified = connection.lastModified
@@ -115,12 +112,48 @@ class Apertium (packagesDir : File, bytecodeDir : File, bytecodeCacheDir : File)
         inStream.close()
 
         // install jar
-        ai.installJar(tmpjarfile, pkg)
+        installJar(tmpjarfile, pkg)
+        //ai.installJar(tmpjarfile, pkg)
 
         // delete temp file
         tmpjarfile.delete()
+    }
 
-        println("PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP2")
+    @Throws(IOException::class)
+    public fun installJar(tmpjarfile : File, pkg: String) {
+        // TODO: Remove all unneeded stuff from jarfile // jarfile.delete();
+        val dir = File(packagesDir, pkg)
+        FileUtils.unzip(tmpjarfile.path, dir.path) { dir, filename ->
+            /**
+             * @param dir the directory in which the filename was found.
+             * @param filename the name of the file in dir to test.
+            */
+            !filename.endsWith(".class")
+        }
+        dir.setLastModified(tmpjarfile.lastModified())
+        val classesDex = File(dir, "classes.dex")
+        val installedjarfile = File(bytecodeDir, "$pkg.jar")
+        if (!classesDex.exists()) {
+            tmpjarfile.renameTo(installedjarfile) // resolve to renaming and hope for the best!
+        } else {
+            val zos = ZipOutputStream(BufferedOutputStream(FileOutputStream(installedjarfile)))
+            try {
+                val entry = ZipEntry(classesDex.name)
+                zos.putNextEntry(entry)
+                val inStream = FileInputStream(classesDex)
+                val buffer = ByteArray(1024)
+                var read: Int
+                while (inStream.read(buffer).also { read = it } != -1) {
+                    zos.write(buffer, 0, read)
+                }
+                inStream.close()
+                classesDex.delete()
+                zos.closeEntry()
+            } finally {
+                zos.close()
+            }
+            installedjarfile.setLastModified(tmpjarfile.lastModified())
+        }
     }
 
     /*******************************************************************************************/

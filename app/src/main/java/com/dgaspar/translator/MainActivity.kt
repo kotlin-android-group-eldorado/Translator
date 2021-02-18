@@ -1,6 +1,7 @@
 package com.dgaspar.translator
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -60,9 +61,9 @@ class MainActivity : AppCompatActivity() {
 
         /** INSTALL es-pt PACKAGE (TEST) */
         /** COMMENT ON FINAL VERSION */
-        //var url : URL = URL("https://svn.code.sf.net/p/apertium/svn/builds/apertium-es-pt/apertium-es-pt.jar")
-        //var pkgAux : String = "apertium-es-pt"
-        //apertium.installPackage(pkgAux, url)
+        var url : URL = URL("https://svn.code.sf.net/p/apertium/svn/builds/apertium-es-pt/apertium-es-pt.jar")
+        var pkgAux : String = "apertium-es-pt"
+        apertium.installPackage(pkgAux, url)
 
         /** add installed package titles to dropDown menu */
         var dropdownMenu : Spinner = findViewById(R.id.dropdown_menu)
@@ -157,6 +158,14 @@ class MainActivity : AppCompatActivity() {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
         spinner.adapter = adapter
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////
+
+    // open package manager activity
+    fun openPackageManagerActivity(view : View){
+        var intent = Intent(this, PackageManagerActivity::class.java)
+        startActivity(intent)
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////
