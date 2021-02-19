@@ -6,11 +6,8 @@ import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.LinearLayout
+import android.widget.*
 import android.widget.LinearLayout.LayoutParams
-import android.widget.TextView
-import android.widget.Toast
 import org.apertium.utils.IOUtils
 import java.io.BufferedReader
 import java.io.File
@@ -118,7 +115,7 @@ class PackageManagerActivity : AppCompatActivity() {
                 apertium,
                 mainLayout,
                 i,
-                title,
+                title.replace(", ", "\n"),
                 (pkg in installedPackages)
             )
 
@@ -147,9 +144,8 @@ class PackageManagerActivity : AppCompatActivity() {
         layoutParams.setMargins(0, 50, 0, 50)
 
         // item layout
-        var itemLayout : LinearLayout = LinearLayout(this)
+        var itemLayout : RelativeLayout = RelativeLayout(this)
         itemLayout.layoutParams = layoutParams
-        itemLayout.orientation = LinearLayout.HORIZONTAL
         itemLayout.gravity = Gravity.CENTER_VERTICAL
 
         // textView
@@ -178,20 +174,23 @@ class PackageManagerActivity : AppCompatActivity() {
 
     /*******************************************************************************************/
 
-    fun createTextView (
-        layout : LinearLayout,
-        //id : Int,
+    private fun createTextView (
+        layout : RelativeLayout,
         text : String,
         textSize : Float = 20f,
         textColor : String = "#000000"
     ) : TextView {
-        var textView : TextView = TextView(this)
-        textView.layoutParams = LayoutParams(
+        // layout params
+        var params : RelativeLayout.LayoutParams = RelativeLayout.LayoutParams(
             LayoutParams.WRAP_CONTENT,
             LayoutParams.WRAP_CONTENT
         )
+        params.addRule(RelativeLayout.ALIGN_PARENT_LEFT)
+
+        // create text
+        var textView : TextView = TextView(this)
+        textView.layoutParams = params
         textView.textSize = textSize
-        //textView.id = id
         textView.text = text
         textView.setTextColor(Color.parseColor(textColor))
         layout.addView(textView)
@@ -201,18 +200,23 @@ class PackageManagerActivity : AppCompatActivity() {
 
     /*******************************************************************************************/
 
-    fun createButton (
-        layout : LinearLayout,
+    private fun createButton (
+        layout : RelativeLayout,
         id : Int,
         text : String,
         textSize : Float = 20f,
         color : String = "#c0c0c0"
     ) : Button {
-        var button : Button = Button(this)
-        button.layoutParams = LayoutParams(
+        // layout params
+        var params : RelativeLayout.LayoutParams = RelativeLayout.LayoutParams(
             LayoutParams.WRAP_CONTENT,
             LayoutParams.WRAP_CONTENT
         )
+        params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT)
+
+        // create button
+        var button : Button = Button(this)
+        button.layoutParams = params
         button.textSize = textSize
         button.text = text
         button.setBackgroundColor(Color.parseColor(color))
@@ -223,41 +227,46 @@ class PackageManagerActivity : AppCompatActivity() {
         return button
     }
 
-    fun buttonListener(apertium : Apertium, button : Button){
+    private fun buttonListener(apertium : Apertium, button : Button){
         var installedPackages = apertium.getInstalledPackages()
 
         var title = lpTitles[button.id]
-        var pkg = titleToPackage[title]
-        var url = titleToURL[title]
+        var pkg = titleToPackage[title].toString()
 
         if (pkg in installedPackages){
-            /** REMOVER */
+
+            /** REMOVE PACKAGE */
+            apertium.uninstallPackage(pkg)
 
             button.text = "Instalar"
             button.setBackgroundColor(Color.parseColor("#9ecae1"))
 
-        } else {
-            /** INSTALAR */
+            Toast.makeText(
+                    this,
+                    "$title removido!",
+                    Toast.LENGTH_LONG
+            ).show()
 
-            button.text = "Remover"
+        } else {
+
+            /** INSTALL PACKAGE */
+            var url = URL(titleToURL[title].toString())
+            apertium.installPackage(this, pkg, url, button)
+
+            button.text = "Instalando"
             button.setBackgroundColor(Color.parseColor("#c0c0c0"))
 
+            Toast.makeText(
+                this,
+                    "Instalando!",
+                Toast.LENGTH_LONG
+            ).show()
         }
-
-        /** update installed packages on apertium object */
-        apertium.rescanForPackages()
-
-        // import package
-        Toast.makeText(
-            this,
-            "id: " + button.id.toString() + " " + title + " " + pkg + " " + url,
-            Toast.LENGTH_LONG
-        ).show()
     }
 
     /*******************************************************************************************/
 
-    fun createHorizontalLine (
+    private fun createHorizontalLine (
         layout : LinearLayout,
         height : Int = 2,
         color : String = "#c0c0c0"

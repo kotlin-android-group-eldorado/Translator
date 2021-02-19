@@ -1,10 +1,14 @@
 package com.dgaspar.translator
 
+import android.content.Context
 import android.util.Log
+import android.widget.Button
+import android.widget.Toast
 import dalvik.system.DexClassLoader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.apertium.Translator
 import org.apertium.utils.IOUtils.cacheDir
 import java.io.*
@@ -35,9 +39,6 @@ class Apertium (packagesDir : File, bytecodeDir : File, bytecodeCacheDir : File)
 
     /** <key, value> = <"es-pt_BR", "apertium-es-pt_BR"> */
     public var modeToPackage = HashMap<String, String>()
-
-    /** REMOVE LATER*/
-    //private var ai : ApertiumInstallation = ApertiumInstallation(packagesDir, bytecodeDir, bytecodeCacheDir)
 
     init {
         packagesDir.mkdirs()
@@ -87,13 +88,32 @@ class Apertium (packagesDir : File, bytecodeDir : File, bytecodeCacheDir : File)
 
     /*******************************************************************************************/
 
-    public fun installPackage(pkg : String, url : URL){
-        CoroutineScope(Dispatchers.IO).launch {
+    /**
+     * INSTALL PACKAGE
+    */
+
+    public fun installPackage(context: Context, pkg : String, url : URL, button : Button){
+        /** install */
+        var job = CoroutineScope(Dispatchers.IO).launch {
             installPackageAsync(pkg, url)
+
+            /** throw a toast when the installation is completed */
+            withContext(Dispatchers.Main){
+                button.text = "Remover"
+
+                Toast.makeText(
+                        context,
+                        "Pacote instalado!",
+                        Toast.LENGTH_LONG
+                ).show()
+            }
         }
     }
 
-    private suspend fun installPackageAsync(pkg : String, url : URL){
+    private suspend fun installPackageAsync(
+            pkg : String,
+            url : URL
+    ){
         var connection : URLConnection = url.openConnection() as HttpsURLConnection
 
         //var lastModified = connection.lastModified
@@ -120,10 +140,12 @@ class Apertium (packagesDir : File, bytecodeDir : File, bytecodeCacheDir : File)
 
         // install jar
         installJar(tmpjarfile, pkg)
-        //ai.installJar(tmpjarfile, pkg)
 
         // delete temp file
         tmpjarfile.delete()
+
+        // rescan - update installed packages
+        rescanForPackages()
     }
 
     @Throws(IOException::class)
@@ -161,6 +183,21 @@ class Apertium (packagesDir : File, bytecodeDir : File, bytecodeCacheDir : File)
             }
             installedjarfile.setLastModified(tmpjarfile.lastModified())
         }
+    }
+
+    /*******************************************************************************************/
+
+    /**
+     * REMOVE PACKAGE
+    */
+
+    public fun uninstallPackage(pkg: String) {
+        FileUtils.remove(File(bytecodeDir, "$pkg.jar"))
+        FileUtils.remove(File(packagesDir, pkg))
+        FileUtils.remove(File(bytecodeCacheDir, "$pkg.dex"))
+
+        // rescan - update installed packages
+        rescanForPackages()
     }
 
     /*******************************************************************************************/

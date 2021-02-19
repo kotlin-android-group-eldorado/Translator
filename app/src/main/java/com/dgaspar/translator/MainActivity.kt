@@ -61,9 +61,9 @@ class MainActivity : AppCompatActivity() {
 
         /** INSTALL es-pt PACKAGE (TEST) */
         /** COMMENT ON FINAL VERSION */
-        var url : URL = URL("https://svn.code.sf.net/p/apertium/svn/builds/apertium-es-pt/apertium-es-pt.jar")
-        var pkgAux : String = "apertium-es-pt"
-        apertium.installPackage(pkgAux, url)
+        //var url : URL = URL("https://svn.code.sf.net/p/apertium/svn/builds/apertium-es-pt/apertium-es-pt.jar")
+        //var pkgAux : String = "apertium-es-pt"
+        //apertium.installPackage(pkgAux, url)
 
         /** add installed package titles to dropDown menu */
         var dropdownMenu : Spinner = findViewById(R.id.dropdown_menu)
@@ -73,7 +73,7 @@ class MainActivity : AppCompatActivity() {
         )
 
         /** active editText if there is any package installed (dropdown_menu != null) */
-        if (dropdownMenu != null){ // not empty
+        if (dropdownMenu != null && dropdownMenu.adapter.count > 0){ // not empty
 
             // dropDown selected variables
             var title : String = dropdownMenu.selectedItem.toString()
@@ -127,21 +127,6 @@ class MainActivity : AppCompatActivity() {
                 false
             })
         }
-/*
-        // PUT BELLOW CODE ON "PackageManagerActivity.kt"
-        // read available packages to install
-        // on original => language_pairs.txt and InstallActivity.java
-        var line : String = "apertium-es-pt\thttps://svn.code.sf.net/p/apertium/svn/builds/apertium-es-pt/apertium-es-pt.jar"
-        var columns = line.split("\t")
-        println("NEED TO CHECK IF THERE ARE AT LEAST 2 COLUMNS")
-
-        // install jar
-        //var url : URL = URL("http://www.android.com/")
-        var url : URL = URL("https://svn.code.sf.net/p/apertium/svn/builds/apertium-es-pt/apertium-es-pt.jar")
-        var pkg : String = "apertium-es-pt"
-        //var pkg : String = columns[0]
-        //var url : URL = URL(columns[1])
-*/
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////
