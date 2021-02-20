@@ -123,6 +123,10 @@ class Apertium (packagesDir : File, bytecodeDir : File, bytecodeCacheDir : File)
 
         // create input and output stream
         var inStream = BufferedInputStream(connection.getInputStream())
+
+        tmpjarfile.parentFile.mkdirs()
+        tmpjarfile.createNewFile()
+
         var fos : FileOutputStream = FileOutputStream(tmpjarfile)
 
         // download data
