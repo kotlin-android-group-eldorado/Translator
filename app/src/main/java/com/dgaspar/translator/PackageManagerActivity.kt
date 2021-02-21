@@ -270,7 +270,6 @@ class PackageManagerActivity : AppCompatActivity() {
     }
 
     /*******************************************************************************************/
-
     private fun createHorizontalLine(
             layout: LinearLayout,
             height: Int = 2,

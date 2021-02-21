@@ -1,7 +1,6 @@
 package com.dgaspar.translator
 
 import android.Manifest.permission.RECORD_AUDIO
-import android.R.attr.data
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent

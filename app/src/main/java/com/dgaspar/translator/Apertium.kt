@@ -2,9 +2,7 @@ package com.dgaspar.translator
 
 import android.content.Context
 import android.util.Log
-import android.view.View
 import android.widget.Button
-import android.widget.LinearLayout
 import android.widget.Toast
 import dalvik.system.DexClassLoader
 import kotlinx.coroutines.*
