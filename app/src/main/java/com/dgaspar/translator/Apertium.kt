@@ -2,7 +2,9 @@ package com.dgaspar.translator
 
 import android.content.Context
 import android.util.Log
+import android.view.View
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.Toast
 import dalvik.system.DexClassLoader
 import kotlinx.coroutines.CoroutineScope
@@ -93,6 +95,7 @@ class Apertium (packagesDir : File, bytecodeDir : File, bytecodeCacheDir : File)
     */
 
     public fun installPackage(context: Context, pkg : String, url : URL, button : Button){
+
         /** install */
         var job = CoroutineScope(Dispatchers.IO).launch {
             installPackageAsync(pkg, url)
@@ -106,8 +109,10 @@ class Apertium (packagesDir : File, bytecodeDir : File, bytecodeCacheDir : File)
                         "Pacote instalado!",
                         Toast.LENGTH_LONG
                 ).show()
+
             }
         }
+        //PackageManagerActivity().disableProgressBar()
     }
 
     private suspend fun installPackageAsync(
@@ -150,6 +155,7 @@ class Apertium (packagesDir : File, bytecodeDir : File, bytecodeCacheDir : File)
 
         // rescan - update installed packages
         rescanForPackages()
+
     }
 
     @Throws(IOException::class)
