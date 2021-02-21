@@ -1,7 +1,10 @@
 package com.dgaspar.translator
 
+import android.Manifest.permission.RECORD_AUDIO
+import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Color
 import android.net.ConnectivityManager
@@ -13,6 +16,8 @@ import android.view.KeyEvent
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import org.apertium.Translator
 import org.apertium.utils.IOUtils
 import java.io.File
@@ -22,6 +27,16 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        requestPermissions()
+
+        if(checkPermissions() != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(
+                    this,
+                    "Permissão negada para acesso ao microfone.",
+                    Toast.LENGTH_LONG
+            ).show()
+        }
 
         // set background color
         var mainLayout : LinearLayout = findViewById(R.id.mainLayout)
@@ -129,10 +144,10 @@ class MainActivity : AppCompatActivity() {
         val layout = findViewById<LinearLayout>(R.id.inputOutputLayout)
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             layout.setOrientation(LinearLayout.HORIZONTAL);
-            Log.e("MainActivity","Alterando orientação para horizontal");
+            Log.e("MainActivity", "Alterando orientação para horizontal");
         } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
             layout.setOrientation(LinearLayout.VERTICAL);
-            Log.e("MainActivity","Alterando orientação para vertical");
+            Log.e("MainActivity", "Alterando orientação para vertical");
         }
     }
 
@@ -177,6 +192,15 @@ class MainActivity : AppCompatActivity() {
             val netInfo = cm.activeNetworkInfo
             return netInfo != null && netInfo.isConnectedOrConnecting
         }
+    }
+
+    private fun checkPermissions(): Int {
+        return ContextCompat.checkSelfPermission(applicationContext, RECORD_AUDIO)
+    }
+
+    private fun requestPermissions() {
+        ActivityCompat.requestPermissions(
+                this@MainActivity, arrayOf(RECORD_AUDIO), 1)
     }
 }
 
