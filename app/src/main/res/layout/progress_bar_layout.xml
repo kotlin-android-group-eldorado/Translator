@@ -18,7 +18,9 @@
         android:layout_height="wrap_content"
         android:textStyle="bold"
         android:gravity="center"
+        android:indeterminate="true"
         android:textColor="@color/black"
-        android:text="Por favor aguarde..."/>
+        android:text="Por favor aguarde..."
+        />
 
 </LinearLayout>

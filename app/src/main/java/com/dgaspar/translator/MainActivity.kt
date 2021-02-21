@@ -1,7 +1,8 @@
 package com.dgaspar.translator
 
 import android.Manifest.permission.RECORD_AUDIO
-import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+import android.R.attr.data
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -11,6 +12,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Bundle
+import android.speech.RecognizerIntent
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
@@ -45,6 +47,7 @@ class MainActivity : AppCompatActivity() {
         // editTexts
         var inputEditText : EditText = findViewById(R.id.inputText)
         var outputEditText : EditText = findViewById(R.id.outputText)
+        var btnSpeak : ImageButton = findViewById(R.id.btnSpeak)
 
         // disable inputEditText
         inputEditText.isEnabled = false
@@ -52,6 +55,7 @@ class MainActivity : AppCompatActivity() {
         inputEditText.isFocusableInTouchMode = false
 
         /////////////////////////////////////////////////////////////////////////////////////
+
         /**
          * APERTIUM TRANSLATOR - KOTLIN
          * https://wiki.apertium.org/wiki/Apertium_Android
@@ -135,6 +139,38 @@ class MainActivity : AppCompatActivity() {
                 }
                 false
             })
+        }
+
+
+    }
+
+    fun openMicrophoneToSpeak(view: View){
+        var inputEditText : EditText = findViewById(R.id.inputText)
+        val intent = Intent(
+                RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, "pt-BR")
+        try {
+            startActivityForResult(intent, 1)
+            inputEditText.setText("")
+        } catch (a: ActivityNotFoundException) {
+            val t = Toast.makeText(applicationContext,
+                    "Opps! Your device doesn't support Speech to Text",
+                    Toast.LENGTH_SHORT)
+            t.show()
+        }
+    }
+
+    /**TODO Setar texto falado no inputEditText**/
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        try {
+
+            when(requestCode == RESULT_OK && null != data) {
+                //var text = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+            }
+
+        }catch (e: Exception){
+            e.printStackTrace()
         }
     }
 

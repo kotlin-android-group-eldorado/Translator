@@ -131,8 +131,6 @@ class PackageManagerActivity : AppCompatActivity() {
 
     /*******************************************************************************************/
 
-
-
     private fun createPackageItem(
             apertium: Apertium,
             layout: LinearLayout,
@@ -267,6 +265,7 @@ class PackageManagerActivity : AppCompatActivity() {
                     "Instalando!",
                     Toast.LENGTH_LONG
             ).show()
+
         }
     }
 
@@ -289,13 +288,14 @@ class PackageManagerActivity : AppCompatActivity() {
     }
 
     fun enableProgressBar(){
-        Log.e("PackageManagerActivity","Ativando barra de progresso")
+        Log.e("PackageManagerActivity", "Ativando barra de progresso")
         var llProgressBar : LinearLayout = findViewById(R.id.llProgressBar)
         llProgressBar.visibility = View.VISIBLE
     }
 
+    /**TODO Achar local pra desabilitar**/
     fun disableProgressBar(){
-        Log.e("PackageManagerActivity","Desativando barra de progresso")
+        Log.e("PackageManagerActivity", "Desativando barra de progresso")
         var llProgressBar : LinearLayout = findViewById(R.id.llProgressBar)
         llProgressBar.visibility = View.GONE
     }
