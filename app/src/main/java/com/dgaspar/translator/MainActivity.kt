@@ -2,26 +2,21 @@ package com.dgaspar.translator
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Color
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.apertium.Translator
 import org.apertium.utils.IOUtils
-import java.io.BufferedInputStream
 import java.io.File
-import java.io.FileOutputStream
-import java.net.URL
-import java.net.URLConnection
-import javax.net.ssl.HttpsURLConnection
+
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,7 +37,6 @@ class MainActivity : AppCompatActivity() {
         inputEditText.isFocusableInTouchMode = false
 
         /////////////////////////////////////////////////////////////////////////////////////
-
         /**
          * APERTIUM TRANSLATOR - KOTLIN
          * https://wiki.apertium.org/wiki/Apertium_Android
@@ -103,14 +97,14 @@ class MainActivity : AppCompatActivity() {
             var inputText : String = ""
             var outputText : String = ""
 
-            inputEditText.setOnKeyListener(View.OnKeyListener{ v, keyCode, event ->
-                if(event.action == KeyEvent.ACTION_UP){
+            inputEditText.setOnKeyListener(View.OnKeyListener { v, keyCode, event ->
+                if (event.action == KeyEvent.ACTION_UP) {
 
                     /** get input text */
                     inputText = inputEditText.text.toString()
 
                     /** translate */
-                    if (inputText.isNotEmpty()){
+                    if (inputText.isNotEmpty()) {
                         Translator.setBase(apertium.getBasedirForPackage(pkg), apertium.getClassLoaderForPackage(pkg))
                         Translator.setMode(mode)
                         outputText = Translator.translate(inputText)
@@ -129,16 +123,29 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+
+        val layout = findViewById<LinearLayout>(R.id.inputOutputLayout)
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            layout.setOrientation(LinearLayout.HORIZONTAL);
+            Log.e("MainActivity","Alterando orientação para horizontal");
+        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            layout.setOrientation(LinearLayout.VERTICAL);
+            Log.e("MainActivity","Alterando orientação para vertical");
+        }
+    }
+
     /////////////////////////////////////////////////////////////////////////////////////////
 
     fun setContentOnDropDownView(
-        spinner : Spinner,
-        items : Array<String>
+            spinner: Spinner,
+            items: Array<String>
     ){
         var adapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_dropdown_item,
-            items
+                this,
+                android.R.layout.simple_spinner_dropdown_item,
+                items
         )
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
@@ -148,7 +155,7 @@ class MainActivity : AppCompatActivity() {
     /////////////////////////////////////////////////////////////////////////////////////////
 
     // open package manager activity
-    fun openPackageManagerActivity(view : View){
+    fun openPackageManagerActivity(view: View){
         var intent = Intent(this, PackageManagerActivity::class.java)
         startActivity(intent)
     }
@@ -172,3 +179,5 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
+
+
