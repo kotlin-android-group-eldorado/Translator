@@ -1,6 +1,7 @@
 package com.dgaspar.translator
 
 import android.Manifest.permission.RECORD_AUDIO
+import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -22,6 +23,7 @@ import androidx.core.content.ContextCompat
 import org.apertium.Translator
 import org.apertium.utils.IOUtils
 import java.io.File
+import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -144,33 +146,34 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun openMicrophoneToSpeak(view: View){
-        var inputEditText : EditText = findViewById(R.id.inputText)
-        val intent = Intent(
-                RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, "pt-BR")
-        try {
-            startActivityForResult(intent, 1)
-            inputEditText.setText("")
-        } catch (a: ActivityNotFoundException) {
-            val t = Toast.makeText(applicationContext,
-                    "Opps! Your device doesn't support Speech to Text",
-                    Toast.LENGTH_SHORT)
-            t.show()
+        // Criando intent
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+        }
+        // Iniciando intent
+        if(intent.resolveActivity(packageManager) != null) {
+            startActivityForResult(intent, SPEECH_REQUEST_CODE)
+        }
+        else {
+            Toast.makeText(this, "Erro ao obter fala", Toast.LENGTH_SHORT).show()
         }
     }
 
-    /**TODO Setar texto falado no inputEditText**/
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        try {
-
-            when(requestCode == RESULT_OK && null != data) {
-                //var text = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
-            }
-
-        }catch (e: Exception){
-            e.printStackTrace()
+        var inputEditText : EditText = findViewById(R.id.inputText)
+        if (requestCode == SPEECH_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            val spokenText: String? =
+                    data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS).let { results ->
+                        results?.get(0)
+                    }
+            inputEditText.setText(spokenText)
         }
+        super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    companion object {
+        private const val SPEECH_REQUEST_CODE = 0
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
