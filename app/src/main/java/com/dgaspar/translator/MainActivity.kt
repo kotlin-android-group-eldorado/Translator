@@ -2,7 +2,6 @@ package com.dgaspar.translator
 
 import android.Manifest.permission.RECORD_AUDIO
 import android.app.Activity
-import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -16,24 +15,34 @@ import android.speech.RecognizerIntent
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.view.KeyEvent
 import android.view.View
-import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.view.setMargins
 import org.apertium.Translator
 import org.apertium.utils.IOUtils
 import java.io.File
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        onCreateOnRestart()
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+
+        onCreateOnRestart()
+    }
+
+    /*******************************************************************************************/
+
+    private fun onCreateOnRestart(){
         requestPermissions()
 
         if(checkPermissions() != PackageManager.PERMISSION_GRANTED) {
@@ -62,7 +71,7 @@ class MainActivity : AppCompatActivity() {
         /**
          * APERTIUM TRANSLATOR - KOTLIN
          * https://wiki.apertium.org/wiki/Apertium_Android
-        */
+         */
 
         /** generate temp dirs */
         var packagesDir : File = File(filesDir, "packages") // where packages data are installed
