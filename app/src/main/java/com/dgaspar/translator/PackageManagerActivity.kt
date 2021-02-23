@@ -270,6 +270,7 @@ class PackageManagerActivity : AppCompatActivity() {
     }
 
     /*******************************************************************************************/
+
     private fun createHorizontalLine(
             layout: LinearLayout,
             height: Int = 2,
@@ -285,6 +286,8 @@ class PackageManagerActivity : AppCompatActivity() {
         // add horizontal line
         layout.addView(horLine)
     }
+
+    /*******************************************************************************************/
 
     fun enableProgressBar(){
         Log.e("PackageManagerActivity", "Ativando barra de progresso")

@@ -151,7 +151,6 @@ class Apertium (packagesDir : File, bytecodeDir : File, bytecodeCacheDir : File)
 
     @Throws(IOException::class)
     fun installJar(tmpjarfile : File, pkg: String) {
-        // TODO: Remove all unneeded stuff from jarfile // jarfile.delete();
         val dir = File(packagesDir, pkg)
         FileUtils.unzip(tmpjarfile.path, dir.path) { dir, filename ->
             /**

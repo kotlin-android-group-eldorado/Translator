@@ -13,6 +13,8 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Bundle
 import android.speech.RecognizerIntent
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
@@ -24,7 +26,6 @@ import org.apertium.Translator
 import org.apertium.utils.IOUtils
 import java.io.File
 import java.util.*
-
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -117,9 +118,15 @@ class MainActivity : AppCompatActivity() {
             var inputText : String = ""
             var outputText : String = ""
 
-            inputEditText.setOnKeyListener(View.OnKeyListener { v, keyCode, event ->
-                if (event.action == KeyEvent.ACTION_UP) {
+            // text watcher
+            inputEditText.addTextChangedListener(object : TextWatcher {
+                override fun afterTextChanged(s: Editable?) {
+                }
 
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                }
+
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                     /** get input text */
                     inputText = inputEditText.text.toString()
 
@@ -135,15 +142,14 @@ class MainActivity : AppCompatActivity() {
                     /** set outputText */
                     println(inputEditText.text)
                     outputEditText.setText(outputText)
-
-                    true
                 }
-                false
             })
         }
-
-
     }
+
+    /*******************************************************************************************/
+
+    /** microphone */
 
     fun openMicrophoneToSpeak(view: View){
         // Criando intent
@@ -168,6 +174,7 @@ class MainActivity : AppCompatActivity() {
                         results?.get(0)
                     }
             inputEditText.setText(spokenText)
+
         }
         super.onActivityResult(requestCode, resultCode, data)
     }
@@ -175,6 +182,10 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val SPEECH_REQUEST_CODE = 0
     }
+
+    /*******************************************************************************************/
+
+    /** configuration changed */
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
@@ -189,7 +200,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////
+    /*******************************************************************************************/
+
+    /** drop down */
 
     fun setContentOnDropDownView(
             spinner: Spinner,
@@ -205,7 +218,9 @@ class MainActivity : AppCompatActivity() {
         spinner.adapter = adapter
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////
+    /*******************************************************************************************/
+
+    /** package manager */
 
     // open package manager activity
     fun openPackageManagerActivity(view: View){
@@ -213,7 +228,7 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////
+    /*******************************************************************************************/
 
     fun isOnline(context: Context): Boolean {
         val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager

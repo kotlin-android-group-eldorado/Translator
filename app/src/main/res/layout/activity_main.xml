@@ -38,25 +38,26 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:drawSelectorOnTop="true"
-                />
+            />
 
             <ImageButton
                 android:layout_width="50dp"
                 android:layout_height="50dp"
+                android:layout_marginLeft="10dp"
                 android:onClick="openPackageManagerActivity"
                 android:src="@android:drawable/ic_menu_manage"
                 android:background="@drawable/roundcorner"
-                />
+            />
 
             <ImageButton
-                android:onClick="openMicrophoneToSpeak"
                 android:id="@+id/btnSpeak"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
-                android:layout_margin="10dp"
-                android:layout_marginRight="10dp"
-                android:layout_marginTop="10dp"
-                android:src="@android:drawable/ic_btn_speak_now" />
+                android:layout_marginLeft="10dp"
+                android:onClick="openMicrophoneToSpeak"
+                android:src="@android:drawable/ic_btn_speak_now"
+                android:background="@drawable/roundcorner"
+            />
 
         </LinearLayout>
 
