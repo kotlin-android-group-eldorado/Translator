@@ -9,7 +9,8 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:ignore="MissingConstraints">
+        tools:ignore="MissingConstraints"
+    >
 
         <LinearLayout
             android:id="@+id/mainLayout"
@@ -29,6 +30,7 @@
     <include
         android:id="@+id/llProgressBar"
         android:visibility="gone"
-        layout="@layout/progress_bar_layout"/>
+        layout="@layout/progress_bar_layout"
+    />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

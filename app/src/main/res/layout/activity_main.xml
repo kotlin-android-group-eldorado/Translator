@@ -11,18 +11,18 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:gravity="top|left"
+        android:gravity="top|center"
         android:padding="10dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintVertical_bias="0.1"
-        >
+    >
 
         <LinearLayout
             android:id="@+id/settingsLayout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
             android:orientation="horizontal"
             android:gravity="center"
             android:paddingHorizontal="10dp"
@@ -31,7 +31,7 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintVertical_bias="0.1"
-            >
+        >
 
             <Spinner
                 android:id="@+id/dropdown_menu"
@@ -40,76 +40,97 @@
                 android:drawSelectorOnTop="true"
             />
 
-            <ImageButton
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_marginLeft="10dp"
-                android:onClick="openPackageManagerActivity"
-                android:src="@android:drawable/ic_menu_manage"
-                android:background="@drawable/roundcorner"
-            />
-
-            <ImageButton
-                android:id="@+id/btnSpeak"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_marginLeft="10dp"
-                android:onClick="openMicrophoneToSpeak"
-                android:src="@android:drawable/ic_btn_speak_now"
-                android:background="@drawable/roundcorner"
-            />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/inputOutputLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:paddingHorizontal="10dp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintVertical_bias="0.1"
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center"
             >
-
-            <EditText
-                android:id="@+id/inputText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textMultiLine"
-                android:minLines="4"
-                android:lines="4"
-                android:maxLines="8"
-                android:gravity="top|left"
-                android:scrollbars="vertical"
-                android:background="@color/white"
+                <ImageButton
+                    android:id="@+id/btnPkgManager"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="10dp"
+                    android:background="@drawable/roundcorner"
+                    android:adjustViewBounds="true"
+                    android:layout_weight="1"
+                    android:onClick="openPackageManagerActivity"
+                    android:scaleType="fitCenter"
+                    android:src="@android:drawable/ic_menu_manage"
                 />
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="2dp"
-                android:layout_marginVertical="10dp"
-                android:background="#c0c0c0"
+                <ImageButton
+                    android:id="@+id/btnSpeak"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="10dp"
+                    android:background="@drawable/roundcorner"
+                    android:adjustViewBounds="true"
+                    android:layout_weight="1"
+                    android:onClick="openMicrophoneToSpeak"
+                    android:scaleType="fitCenter"
+                    android:src="@android:drawable/ic_btn_speak_now"
                 />
 
-            <EditText
-                android:id="@+id/outputText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textMultiLine"
-                android:minLines="4"
-                android:lines="4"
-                android:maxLines="8"
-                android:gravity="top|left"
-                android:scrollbars="vertical"
-                android:background="@color/white"
-                android:enabled="false"
-                android:focusable="false"
-                android:textColor="@color/black"
-                />
+            </LinearLayout>
 
         </LinearLayout>
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:ignore="MissingConstraints"
+        >
+            <LinearLayout
+                android:id="@+id/inputOutputLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingHorizontal="10dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintVertical_bias="0.1"
+                >
+
+                <EditText
+                    android:id="@+id/inputText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textMultiLine"
+                    android:minLines="4"
+                    android:lines="4"
+                    android:maxLines="8"
+                    android:gravity="top|left"
+                    android:scrollbars="vertical"
+                    android:background="@color/white"
+                    />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="2dp"
+                    android:layout_marginVertical="10dp"
+                    android:background="#c0c0c0"
+                    />
+
+                <EditText
+                    android:id="@+id/outputText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textMultiLine"
+                    android:minLines="4"
+                    android:lines="4"
+                    android:maxLines="8"
+                    android:gravity="top|left"
+                    android:scrollbars="vertical"
+                    android:background="@color/white"
+                    android:enabled="false"
+                    android:focusable="false"
+                    android:textColor="@color/black"
+                    />
+
+            </LinearLayout>
+        </ScrollView>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
