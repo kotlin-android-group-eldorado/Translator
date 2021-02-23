@@ -18,10 +18,12 @@ import android.text.TextWatcher
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
+import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.setMargins
 import org.apertium.Translator
 import org.apertium.utils.IOUtils
 import java.io.File
@@ -49,7 +51,6 @@ class MainActivity : AppCompatActivity() {
         // editTexts
         var inputEditText : EditText = findViewById(R.id.inputText)
         var outputEditText : EditText = findViewById(R.id.outputText)
-        var btnSpeak : ImageButton = findViewById(R.id.btnSpeak)
 
         // disable inputEditText
         inputEditText.isEnabled = false
@@ -190,13 +191,31 @@ class MainActivity : AppCompatActivity() {
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
 
-        val layout = findViewById<LinearLayout>(R.id.inputOutputLayout)
+        var layout = findViewById<LinearLayout>(R.id.inputOutputLayout)
+        var separatorLine : View = findViewById(R.id.separatorLine)
+
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            layout.setOrientation(LinearLayout.HORIZONTAL);
+            layout.orientation = LinearLayout.HORIZONTAL;
+            var separatorLineParams : LinearLayout.LayoutParams = LinearLayout.LayoutParams(
+                    2,
+                    LinearLayout.LayoutParams.MATCH_PARENT
+            )
+            separatorLineParams.setMargins(10, 0, 10, 0)
+            separatorLine.layoutParams = separatorLineParams
+
             Log.e("MainActivity", "Alterando orientação para horizontal");
+
         } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            layout.setOrientation(LinearLayout.VERTICAL);
+            layout.orientation = LinearLayout.VERTICAL;
+            var separatorLineParams : LinearLayout.LayoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                2
+            )
+            separatorLineParams.setMargins(0, 10, 0, 10)
+            separatorLine.layoutParams = separatorLineParams
+
             Log.e("MainActivity", "Alterando orientação para vertical");
+
         }
     }
 
@@ -220,7 +239,7 @@ class MainActivity : AppCompatActivity() {
 
     /*******************************************************************************************/
 
-    /** package manager */
+    /** package manager link */
 
     // open package manager activity
     fun openPackageManagerActivity(view: View){
