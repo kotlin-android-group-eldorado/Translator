@@ -5,10 +5,7 @@ import android.util.Log
 import android.widget.Button
 import android.widget.Toast
 import dalvik.system.DexClassLoader
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import org.apertium.Translator
 import org.apertium.utils.IOUtils.cacheDir
 import java.io.*
@@ -48,7 +45,7 @@ class Apertium (packagesDir : File, bytecodeDir : File, bytecodeCacheDir : File)
 
     /*******************************************************************************************/
 
-    public fun rescanForPackages(){
+    fun rescanForPackages(){
         titleToMode.clear()
         modeToPackage.clear()
 
@@ -82,7 +79,7 @@ class Apertium (packagesDir : File, bytecodeDir : File, bytecodeCacheDir : File)
 
     /*******************************************************************************************/
 
-    public fun getInstalledPackages() : ArrayList<String>{
+    fun getInstalledPackages() : ArrayList<String>{
         return packagesDir.list().toCollection(ArrayList())
     }
 
@@ -92,25 +89,25 @@ class Apertium (packagesDir : File, bytecodeDir : File, bytecodeCacheDir : File)
      * INSTALL PACKAGE
     */
 
-    public fun installPackage(context: Context, pkg : String, url : URL, button : Button){
+    fun installPackage(context: Context, pkg : String, url : URL, button : Button){
+
         /** install */
-        var job = CoroutineScope(Dispatchers.IO).launch {
+       CoroutineScope(Dispatchers.IO).launch {
             installPackageAsync(pkg, url)
 
             /** throw a toast when the installation is completed */
-            withContext(Dispatchers.Main){
+            withContext(Dispatchers.Main) {
                 button.text = "Remover"
 
                 Toast.makeText(
                         context,
                         "Pacote instalado!",
-                        Toast.LENGTH_LONG
-                ).show()
+                        Toast.LENGTH_LONG).show()
             }
         }
     }
 
-    private suspend fun installPackageAsync(
+    private fun installPackageAsync(
             pkg : String,
             url : URL
     ){
@@ -153,7 +150,7 @@ class Apertium (packagesDir : File, bytecodeDir : File, bytecodeCacheDir : File)
     }
 
     @Throws(IOException::class)
-    public fun installJar(tmpjarfile : File, pkg: String) {
+    fun installJar(tmpjarfile : File, pkg: String) {
         // TODO: Remove all unneeded stuff from jarfile // jarfile.delete();
         val dir = File(packagesDir, pkg)
         FileUtils.unzip(tmpjarfile.path, dir.path) { dir, filename ->
@@ -195,7 +192,7 @@ class Apertium (packagesDir : File, bytecodeDir : File, bytecodeCacheDir : File)
      * REMOVE PACKAGE
     */
 
-    public fun uninstallPackage(pkg: String) {
+    fun uninstallPackage(pkg: String) {
         FileUtils.remove(File(bytecodeDir, "$pkg.jar"))
         FileUtils.remove(File(packagesDir, pkg))
         FileUtils.remove(File(bytecodeCacheDir, "$pkg.dex"))
@@ -208,7 +205,7 @@ class Apertium (packagesDir : File, bytecodeDir : File, bytecodeCacheDir : File)
 
     /** auxiliar functions */
 
-    public fun getClassLoaderForPackage(pkg: String): DexClassLoader? {
+    fun getClassLoaderForPackage(pkg: String): DexClassLoader? {
         if (!bytecodeCacheDir.exists()) {
             bytecodeCacheDir.mkdirs()
         }
@@ -218,7 +215,7 @@ class Apertium (packagesDir : File, bytecodeDir : File, bytecodeCacheDir : File)
                 null, this.javaClass.classLoader)
     }
 
-    public fun getBasedirForPackage(pkg: String): String? {
+    fun getBasedirForPackage(pkg: String): String? {
         return "$packagesDir/$pkg"
     }
 }

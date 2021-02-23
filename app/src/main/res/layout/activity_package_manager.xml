@@ -26,4 +26,9 @@
 
     </ScrollView>
 
+    <include
+        android:id="@+id/llProgressBar"
+        android:visibility="gone"
+        layout="@layout/progress_bar_layout"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

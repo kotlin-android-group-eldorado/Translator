@@ -1,32 +1,45 @@
 package com.dgaspar.translator
 
+import android.Manifest.permission.RECORD_AUDIO
+import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.graphics.Color
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Bundle
+import android.speech.RecognizerIntent
+import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import org.apertium.Translator
 import org.apertium.utils.IOUtils
-import java.io.BufferedInputStream
 import java.io.File
-import java.io.FileOutputStream
-import java.net.URL
-import java.net.URLConnection
-import javax.net.ssl.HttpsURLConnection
+import java.util.*
+
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        requestPermissions()
+
+        if(checkPermissions() != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(
+                    this,
+                    "Permissão negada para acesso ao microfone.",
+                    Toast.LENGTH_LONG
+            ).show()
+        }
 
         // set background color
         var mainLayout : LinearLayout = findViewById(R.id.mainLayout)
@@ -35,6 +48,7 @@ class MainActivity : AppCompatActivity() {
         // editTexts
         var inputEditText : EditText = findViewById(R.id.inputText)
         var outputEditText : EditText = findViewById(R.id.outputText)
+        var btnSpeak : ImageButton = findViewById(R.id.btnSpeak)
 
         // disable inputEditText
         inputEditText.isEnabled = false
@@ -103,14 +117,14 @@ class MainActivity : AppCompatActivity() {
             var inputText : String = ""
             var outputText : String = ""
 
-            inputEditText.setOnKeyListener(View.OnKeyListener{ v, keyCode, event ->
-                if(event.action == KeyEvent.ACTION_UP){
+            inputEditText.setOnKeyListener(View.OnKeyListener { v, keyCode, event ->
+                if (event.action == KeyEvent.ACTION_UP) {
 
                     /** get input text */
                     inputText = inputEditText.text.toString()
 
                     /** translate */
-                    if (inputText.isNotEmpty()){
+                    if (inputText.isNotEmpty()) {
                         Translator.setBase(apertium.getBasedirForPackage(pkg), apertium.getClassLoaderForPackage(pkg))
                         Translator.setMode(mode)
                         outputText = Translator.translate(inputText)
@@ -127,18 +141,64 @@ class MainActivity : AppCompatActivity() {
                 false
             })
         }
+
+
+    }
+
+    fun openMicrophoneToSpeak(view: View){
+        // Criando intent
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+        }
+        // Iniciando intent
+        if(intent.resolveActivity(packageManager) != null) {
+            startActivityForResult(intent, SPEECH_REQUEST_CODE)
+        }
+        else {
+            Toast.makeText(this, "Erro ao obter fala", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        var inputEditText : EditText = findViewById(R.id.inputText)
+        if (requestCode == SPEECH_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            val spokenText: String? =
+                    data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS).let { results ->
+                        results?.get(0)
+                    }
+            inputEditText.setText(spokenText)
+        }
+        super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    companion object {
+        private const val SPEECH_REQUEST_CODE = 0
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+
+        val layout = findViewById<LinearLayout>(R.id.inputOutputLayout)
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            layout.setOrientation(LinearLayout.HORIZONTAL);
+            Log.e("MainActivity", "Alterando orientação para horizontal");
+        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            layout.setOrientation(LinearLayout.VERTICAL);
+            Log.e("MainActivity", "Alterando orientação para vertical");
+        }
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////
 
     fun setContentOnDropDownView(
-        spinner : Spinner,
-        items : Array<String>
+            spinner: Spinner,
+            items: Array<String>
     ){
         var adapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_dropdown_item,
-            items
+                this,
+                android.R.layout.simple_spinner_dropdown_item,
+                items
         )
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
@@ -148,7 +208,7 @@ class MainActivity : AppCompatActivity() {
     /////////////////////////////////////////////////////////////////////////////////////////
 
     // open package manager activity
-    fun openPackageManagerActivity(view : View){
+    fun openPackageManagerActivity(view: View){
         var intent = Intent(this, PackageManagerActivity::class.java)
         startActivity(intent)
     }
@@ -171,4 +231,15 @@ class MainActivity : AppCompatActivity() {
             return netInfo != null && netInfo.isConnectedOrConnecting
         }
     }
+
+    private fun checkPermissions(): Int {
+        return ContextCompat.checkSelfPermission(applicationContext, RECORD_AUDIO)
+    }
+
+    private fun requestPermissions() {
+        ActivityCompat.requestPermissions(
+                this@MainActivity, arrayOf(RECORD_AUDIO), 1)
+    }
 }
+
+
